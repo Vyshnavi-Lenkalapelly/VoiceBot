@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Website</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            color: #061a75;
+        }
+
+        nav {
+            background-color: #4fee8c;
+            color: #2e1977;            padding: 15px 0;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav ul li {
+            display: inline;
+        }
+
+        nav ul li a {
+            color: #060303;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        header {
+        
+            background-image: url('10.jpg');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            padding: 100px 0; /* Adjusted padding */
+            text-align: center;
+            margin-top: 20px; /* Added margin-top */
+
+
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.5rem;
+            margin: 10px 0 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .food-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .food-item {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            text-align: center;
+            flex: 1 1 calc(33.333% - 20px);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+
+        .food-item:hover {
+            transform: translateY(-10px);
+        }
+
+        .food-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .food-item h2 {
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+
+        .food-item p {
+            padding: 0 20px 20px;
+            font-size: 1rem;
+        }
+
+        .testimonials {
+            background-color: #fff;
+            padding: 60px 0;
+            text-align: center;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+        }
+
+        .testimonials h2 {
+            font-size: 2rem;
+            margin-bottom: 40px;
+            color: #ff7f00;
+        }
+
+        .testimonial-item {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(100, 216, 170, 0.1);
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .testimonial-item p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #ff8c00;
+            
+        }
+
+        .testimonial-item h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .food-grid {
+                flex-direction: column;
+            }
+            .food-item {
+                flex: 1 1 100%;
+            }
+        }
+        .chat-bot {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            border: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+    <header id="home">
+        <div class="container">
+            <h1>Delicious Food</h1>
+            <p>Your favorite meals delivered to your door</p>
+        </div>
+    </header>
+    <iframe class="chat-bot" width="350" height="430" allow="microphone;" src="https://console.dialogflow.com/api-client/demo/embedded/46ff1f27-3631-4625-813b-0c1883ccaa5d"></iframe>
+    <main>
+        <div class="container" id="menu">
+            <h2>Our Menu</h2>
+            <div class="food-grid">
+                <div class="food-item">
+                    <img src="1.jpeg" alt="Food 1">
+                    <h2>Pizza</h2>
+                    
+                </div>
+                <div class="food-item">
+                    <img src="2.jpeg" alt="Food 2">
+                    <h2>Mango Lassi</h2>
+                </div>
+                <div class="food-item">
+                    <img src="3.jpeg" alt="Food 3">
+                    <h2>Rava Dosa</h2>
+                 
+                </div>
+                <div class="food-item">
+                    <img src="4.jpeg" alt="Food 4">
+                    <h2>Chole Bhature</h2>
+                  
+                </div>
+                <div class="food-item">
+                    <img src="5.jpeg" alt="Food 5">
+                    <h2>Samosa</h2>
+               
+                </div>
+                <div class="food-item">
+                    <img src="6.jpeg" alt="Food 6">
+                    <h2>Pav Bhaji</h2>
+                 
+                </div>
+                <div class="food-item">
+                    <img src="7.jpeg" alt="Food 6">
+                    <h2>Biryani</h2>
+             
+                </div>
+                <div class="food-item">
+                    <img src="8.jpeg" alt="Food 6">
+                    <h2>Vada Pav</h2>
+                
+                </div>
+                <div class="food-item">
+                    <img src="9.jpeg" alt="Food 6">
+                    <h2>Masala DOsa</h2>
+                 
+                </div>
+                
+            </div>
+        </div>
+        <div class="testimonials" id="testimonials">
+            <div class="container">
+                <h2>What Our Customers Say</h2>
+                <div class="testimonial-item">
+                    <p>"The best food delivery service I've ever used. The meals are always fresh and delicious!"</p>
+                    <h3>- Jane Doe</h3>
+                </div>
+                <div class="testimonial-item" style="margin-top: 20px;">
+                    <p>"Amazing variety and excellent quality. Highly recommend to anyone looking for great food!"</p>
+                    <h3>- John Smith</h3>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer id="contact">
+        <div class="container">
+
+            <p>&copy; 2024 Delicious Food. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
