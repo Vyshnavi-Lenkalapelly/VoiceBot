@@ -25,6 +25,12 @@ const VoiceBotCard = () => {
   // Handle speech recognition result
   const handleSpeechResult = useCallback(async (finalText: string) => {
     if (finalText.length < 2) return;
+    
+    // Ignore speech input if AI is currently speaking
+    if (isSpeaking) {
+      console.log('Ignoring speech input - AI is speaking');
+      return;
+    }
 
     console.log('Processing speech result:', finalText);
 
@@ -115,7 +121,7 @@ const VoiceBotCard = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, []);
+  }, [isSpeaking]);
 
   // Initialize speech recognition and synthesis
   useEffect(() => {
@@ -145,6 +151,12 @@ const VoiceBotCard = () => {
       recognition.current.maxAlternatives = 1;
 
       recognition.current.onresult = (event: any) => {
+        // Don't process results if AI is speaking
+        if (isSpeaking) {
+          console.log('Ignoring recognition result - AI is speaking');
+          return;
+        }
+
         let finalTranscript = '';
         let interimTranscript = '';
 
@@ -159,7 +171,7 @@ const VoiceBotCard = () => {
 
         setTranscript(finalTranscript + interimTranscript);
 
-        if (finalTranscript.trim().length > 0) {
+        if (finalTranscript.trim().length > 0 && !isSpeaking) {
           handleSpeechResult(finalTranscript.trim());
           setIsListening(false);
         }
@@ -196,10 +208,10 @@ const VoiceBotCard = () => {
 
       recognition.current.onend = () => {
         console.log('Speech recognition ended');
-        // Auto-restart if still listening and no transcript
-        if (isListening && !transcript.trim()) {
+        // Only auto-restart if we're supposed to be listening AND AI is not speaking
+        if (isListening && !transcript.trim() && !isSpeaking) {
           setTimeout(() => {
-            if (recognition.current && isListening) {
+            if (recognition.current && isListening && !isSpeaking) {
               try {
                 recognition.current.start();
                 setTranscript('🎤 Listening... Speak now');
@@ -228,7 +240,7 @@ const VoiceBotCard = () => {
         recognition.current.stop();
       }
     };
-  }, [handleSpeechResult]);
+  }, [handleSpeechResult, isListening, isSpeaking]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -261,8 +273,14 @@ const VoiceBotCard = () => {
     }
 
     utterance.onstart = () => {
-      console.log('Speech started');
+      console.log('Speech started - stopping recognition');
       setIsSpeaking(true);
+      // Stop speech recognition when AI starts speaking
+      if (recognition.current && isListening) {
+        recognition.current.stop();
+        setIsListening(false);
+        setTranscript('');
+      }
     };
 
     utterance.onend = () => {
@@ -291,6 +309,12 @@ const VoiceBotCard = () => {
   const toggleListening = () => {
     if (!recognition.current) {
       setError('Speech recognition not available. Please use Chrome browser for the best experience.');
+      return;
+    }
+
+    // Don't start listening if AI is speaking
+    if (isSpeaking) {
+      setError('Please wait for the AI to finish speaking before starting voice input.');
       return;
     }
 
