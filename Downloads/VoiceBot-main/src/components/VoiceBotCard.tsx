@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import MicrophoneButton from './MicrophoneButton';
 
 interface Message {
@@ -22,145 +22,8 @@ const VoiceBotCard = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechSynthesis = useRef<SpeechSynthesis | null>(null);
 
-  // Initialize speech recognition and synthesis
-  useEffect(() => {
-    // Initialize Speech Synthesis
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      speechSynthesis.current = window.speechSynthesis;
-    }
-
-    // Initialize Speech Recognition
-    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      recognition.current = new SpeechRecognition();
-      
-      recognition.current.continuous = false;
-      recognition.current.interimResults = true;
-      recognition.current.lang = 'en-US';
-      recognition.current.maxAlternatives = 1;
-
-      recognition.current.onresult = (event: any) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcriptPart = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcriptPart;
-          } else {
-            interimTranscript += transcriptPart;
-          }
-        }
-
-        setTranscript(finalTranscript + interimTranscript);
-
-        if (finalTranscript.trim().length > 0) {
-          handleSpeechResult(finalTranscript.trim());
-          setIsListening(false);
-        }
-      };
-
-      recognition.current.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        
-        switch (event.error) {
-          case 'network':
-            setError('Network error. Please check your internet connection and try again.');
-            break;
-          case 'not-allowed':
-            setError('Microphone access denied. Please allow microphone permissions.');
-            break;
-          case 'no-speech':
-            setError('No speech detected. Please try speaking more clearly.');
-            break;
-          case 'audio-capture':
-            setError('Audio capture failed. Please check your microphone.');
-            break;
-          default:
-            setError(`Speech recognition error: ${event.error}. Please try again.`);
-        }
-        setIsListening(false);
-      };
-
-      recognition.current.onend = () => {
-        setIsListening(false);
-        console.log('Speech recognition ended');
-      };
-
-      recognition.current.onstart = () => {
-        console.log('Speech recognition started');
-        setError(null);
-      };
-    } else {
-      setError('Speech recognition not supported in this browser. Please use Chrome for the best experience.');
-    }
-
-    return () => {
-      if (recognition.current) {
-        recognition.current.stop();
-      }
-    };
-  }, []);
-
-  // Auto-scroll to bottom of messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Text-to-Speech function
-  const speakText = (text: string) => {
-    if (!speechSynthesis.current) {
-      console.log('Speech synthesis not available');
-      return;
-    }
-
-    speechSynthesis.current.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
-    utterance.volume = 0.8;
-    
-    const voices = speechSynthesis.current.getVoices();
-    const preferredVoice = voices.find(voice => 
-      voice.lang.startsWith('en') && 
-      (voice.name.includes('Google') || voice.name.includes('Female') || voice.name.includes('Samantha'))
-    ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-    
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    utterance.onstart = () => {
-      console.log('Speech started');
-      setIsSpeaking(true);
-    };
-
-    utterance.onend = () => {
-      console.log('Speech ended');
-      setIsSpeaking(false);
-    };
-
-    utterance.onerror = (event) => {
-      // Don't log "interrupted" errors as they're expected when we cancel speech
-      if (event.error !== 'interrupted') {
-        console.error('Speech synthesis error:', event.error);
-      }
-      setIsSpeaking(false);
-    };
-
-    speechSynthesis.current.speak(utterance);
-  };
-
-  const stopSpeaking = () => {
-    if (speechSynthesis.current) {
-      speechSynthesis.current.cancel();
-      setIsSpeaking(false);
-    }
-  };
-
-  const handleSpeechResult = async (finalText: string) => {
+  // Handle speech recognition result
+  const handleSpeechResult = useCallback(async (finalText: string) => {
     if (finalText.length < 2) return;
 
     console.log('Processing speech result:', finalText);
@@ -252,6 +115,144 @@ const VoiceBotCard = () => {
     } finally {
       setIsProcessing(false);
     }
+  }, []);
+
+  // Initialize speech recognition and synthesis
+  useEffect(() => {
+    // Initialize Speech Synthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      speechSynthesis.current = window.speechSynthesis;
+    }
+
+    // Initialize Speech Recognition
+    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognition.current = new SpeechRecognition();
+      
+      recognition.current.continuous = false;
+      recognition.current.interimResults = true;
+      recognition.current.lang = 'en-US';
+      recognition.current.maxAlternatives = 1;
+
+      recognition.current.onresult = (event: any) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcriptPart = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcriptPart;
+          } else {
+            interimTranscript += transcriptPart;
+          }
+        }
+
+        setTranscript(finalTranscript + interimTranscript);
+
+        if (finalTranscript.trim().length > 0) {
+          handleSpeechResult(finalTranscript.trim());
+          setIsListening(false);
+        }
+      };
+
+      recognition.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        
+        switch (event.error) {
+          case 'network':
+            setError('Network error. Please check your internet connection and try again.');
+            break;
+          case 'not-allowed':
+            setError('Microphone access denied. Please allow microphone permissions.');
+            break;
+          case 'no-speech':
+            setError('No speech detected. Please try speaking more clearly.');
+            break;
+          case 'audio-capture':
+            setError('Audio capture failed. Please check your microphone.');
+            break;
+          default:
+            setError(`Speech recognition error: ${event.error}. Please try again.`);
+        }
+        setIsListening(false);
+      };
+
+      recognition.current.onend = () => {
+        setIsListening(false);
+        console.log('Speech recognition ended');
+      };
+
+      recognition.current.onstart = () => {
+        console.log('Speech recognition started');
+        setError(null);
+      };
+    } else {
+      setError('Speech recognition not supported in this browser. Please use Chrome for the best experience.');
+    }
+
+    return () => {
+      if (recognition.current) {
+        recognition.current.stop();
+      }
+    };
+  }, [handleSpeechResult]);
+
+  // Auto-scroll to bottom of messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Text-to-Speech function
+  const speakText = (text: string) => {
+    if (!speechSynthesis.current) {
+      console.log('Speech synthesis not available');
+      return;
+    }
+
+    speechSynthesis.current.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.8;
+    
+    const voices = speechSynthesis.current.getVoices();
+    const preferredVoice = voices.find(voice => 
+      voice.lang.startsWith('en') && 
+      (voice.name.includes('Google') || voice.name.includes('Female') || voice.name.includes('Samantha'))
+    ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    utterance.onstart = () => {
+      console.log('Speech started');
+      setIsSpeaking(true);
+    };
+
+    utterance.onend = () => {
+      console.log('Speech ended');
+      setIsSpeaking(false);
+    };
+
+    utterance.onerror = (event) => {
+      // Don't log "interrupted" errors as they're expected when we cancel speech
+      if (event.error !== 'interrupted') {
+        console.error('Speech synthesis error:', event.error);
+      }
+      setIsSpeaking(false);
+    };
+
+    speechSynthesis.current.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    if (speechSynthesis.current) {
+      speechSynthesis.current.cancel();
+      setIsSpeaking(false);
+    }
   };
 
   const toggleListening = () => {
@@ -318,7 +319,7 @@ const VoiceBotCard = () => {
             <div className="text-center py-8 text-gray-400">
               <div className="text-2xl mb-2">🎤</div>
               <p>Click the microphone and start speaking</p>
-              <p className="text-sm mt-1">I'll listen and respond using AI</p>
+              <p className="text-sm mt-1">              <p>I&apos;ll listen and respond using AI</p></p>
             </div>
           ) : (
             <div className="space-y-4">

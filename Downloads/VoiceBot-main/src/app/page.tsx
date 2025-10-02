@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import VoiceBotCard from '@/components/VoiceBotCard';
 
 export default function Home() {

@@ -42,10 +42,10 @@ export async function POST(request: NextRequest) {
 
       if (modelsResponse.ok) {
         const modelsData = await modelsResponse.json();
-        console.log('Available models:', modelsData.models?.map((m: any) => m.name) || []);
+        console.log('Available models:', modelsData.models?.map((m: { name: string }) => m.name) || []);
         
         // Find a model that supports generateContent
-        const availableModel = modelsData.models?.find((model: any) => 
+        const availableModel = modelsData.models?.find((model: { name: string; supportedGenerationMethods?: string[] }) => 
           model.supportedGenerationMethods?.includes('generateContent') &&
           model.name.includes('gemini')
         );
@@ -92,7 +92,7 @@ User's question: ${message}`;
             
             console.log('SDK success with discovered model!');
             return NextResponse.json({ response: text });
-          } catch (sdkError) {
+          } catch {
             console.log('SDK failed, trying direct API with discovered model...');
             
             // Try direct API call with the discovered model
