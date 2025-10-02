@@ -119,6 +119,16 @@ const VoiceBotCard = () => {
 
   // Initialize speech recognition and synthesis
   useEffect(() => {
+    // Check if we're in a secure context (HTTPS or localhost)
+    const isSecureContext = window.location.protocol === 'https:' || 
+                           window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1';
+
+    if (!isSecureContext) {
+      setError('Speech recognition requires HTTPS. The site must be served over a secure connection.');
+      return;
+    }
+
     // Initialize Speech Synthesis
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       speechSynthesis.current = window.speechSynthesis;
@@ -129,7 +139,7 @@ const VoiceBotCard = () => {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognition.current = new SpeechRecognition();
       
-      recognition.current.continuous = false;
+      recognition.current.continuous = true;
       recognition.current.interimResults = true;
       recognition.current.lang = 'en-US';
       recognition.current.maxAlternatives = 1;
@@ -166,8 +176,15 @@ const VoiceBotCard = () => {
             setError('Microphone access denied. Please allow microphone permissions.');
             break;
           case 'no-speech':
-            setError('No speech detected. Please try speaking more clearly.');
-            break;
+            setError('No speech detected. Speak louder and closer to the microphone. Ensure you\'re in a quiet environment.');
+            // Don't stop listening immediately - give user another chance
+            setTimeout(() => {
+              if (recognition.current && isListening) {
+                setError(null);
+                setTranscript('🎤 Ready - Please speak now...');
+              }
+            }, 3000);
+            return; // Don't set isListening to false
           case 'audio-capture':
             setError('Audio capture failed. Please check your microphone.');
             break;
@@ -178,13 +195,29 @@ const VoiceBotCard = () => {
       };
 
       recognition.current.onend = () => {
-        setIsListening(false);
         console.log('Speech recognition ended');
+        // Auto-restart if still listening and no transcript
+        if (isListening && !transcript.trim()) {
+          setTimeout(() => {
+            if (recognition.current && isListening) {
+              try {
+                recognition.current.start();
+                setTranscript('🎤 Listening... Speak now');
+              } catch (error) {
+                console.log('Failed to restart:', error);
+                setIsListening(false);
+              }
+            }
+          }, 500);
+        } else {
+          setIsListening(false);
+        }
       };
 
       recognition.current.onstart = () => {
         console.log('Speech recognition started');
         setError(null);
+        setTranscript('🎤 Listening... Please speak clearly');
       };
     } else {
       setError('Speech recognition not supported in this browser. Please use Chrome for the best experience.');
@@ -318,8 +351,16 @@ const VoiceBotCard = () => {
           {messages.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <div className="text-2xl mb-2">🎤</div>
-              <p>Click the microphone and start speaking</p>
+              <p className="text-lg mb-2">Click the microphone and start speaking</p>
               <p className="text-sm mt-1">I&apos;ll listen and respond using AI</p>
+              <div className="text-xs mt-4 space-y-1 text-gray-500 bg-gray-800/50 p-3 rounded-lg">
+                <p><strong>💡 Tips for better speech recognition:</strong></p>
+                <p>• Speak clearly and at normal volume</p>
+                <p>• Allow microphone permissions when prompted</p>
+                <p>• Use Chrome or Edge browser for best results</p>
+                <p>• Ensure you&apos;re in a quiet environment</p>
+                <p>• Wait for the microphone icon to turn blue before speaking</p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
